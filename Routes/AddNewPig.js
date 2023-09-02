@@ -6,9 +6,7 @@ const pool = require("../pool");
 app.post(
   "/dodajSvinju",
   [
-    body("serijski_broj")
-      .isString()
-      .withMessage("Serijski broj mora biti tekstualni string."),
+    body("serijski_broj").isInt().withMessage("Serijski broj mora biti broj."),
     body("rasa").isString().withMessage("Rasa mora biti tekstualni string."),
     body("tekst_podsjetnika")
       .optional()
