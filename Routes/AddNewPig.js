@@ -60,7 +60,7 @@ app.post(
 
         if (vakcine) {
           pool.query(
-            "INSERT INTO vakcine (pig_id, naziv_vakcine, datum_primene) VALUES ($1, $2, $3);",
+            "INSERT INTO istorijaVakcinacije (pig_id, naziv_vakcine, datum_primene) VALUES ($1, $2, $3);",
             [newlyCreatedId, nazivVakcine, datumVakcine],
             (err) => {
               if (err) {

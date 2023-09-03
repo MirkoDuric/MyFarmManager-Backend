@@ -8,6 +8,8 @@ const Prašenja = require("./Routes/Prasenja");
 const BolestiSvinja = require("./Routes/Bolesti");
 const IstorijaBolesti = require("./Routes/IstorijaBolesti");
 const Vakcine = require("./Routes/Vakcine");
+const IstorijaVakcinacije = require("./Routes/IstorijaVakcinacije");
+const PigInfoModify = require("./Routes/PigInfoModify");
 
 app.use(express.json());
 
@@ -17,6 +19,8 @@ app.use("", Prašenja);
 app.use("", BolestiSvinja);
 app.use("", IstorijaBolesti);
 app.use("", Vakcine);
+app.use("", IstorijaVakcinacije);
+app.use("", PigInfoModify);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
