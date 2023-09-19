@@ -10,10 +10,11 @@ app.get("/piginfo/piglist", (req, res) => {
   const offset = (page - 1) * limit;
 
   pool.query(
-    "SELECT serijski_broj_svinje, rasa_svinje FROM PigInfo LIMIT $1 OFFSET $2;",
+    "SELECT * FROM PigInfo LIMIT $1 OFFSET $2;",
     [limit, offset],
     (err, results) => {
       if (err) {
+        console.log(err);
         res.status(500).json({ error: "Internal Server Error" });
         return;
       }
