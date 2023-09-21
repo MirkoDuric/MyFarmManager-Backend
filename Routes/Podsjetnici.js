@@ -8,20 +8,19 @@ app.get("/podsjetnici_za_svinje", (req, res) => {
     .query(
       `
       SELECT 
-      s.id AS id,
+      s.id AS svinja_id,
+      s.serijski_broj_svinje,
+      s.rasa_svinje,
       CASE 
           WHEN p.pig_id IS NOT NULL THEN true 
           ELSE false 
-      END AS has_podsjetnik
-  FROM piginfo s
-  LEFT JOIN podsjetnici p ON s.id = p.pig_id
-  WHERE 
-      CASE 
-          WHEN p.pig_id IS NOT NULL THEN true 
-          ELSE false 
-      END = true;
-  
-    `
+      END AS has_podsjetnik,
+      p.datumpodsjetnika,
+      p.tekst_podsjetnika,
+      P.id
+    FROM piginfo s
+    LEFT JOIN podsjetnici p ON s.id = p.pig_id
+    WHERE p.pig_id IS NOT NULL;`
     )
     .then((result) => {
       res.json(result);
@@ -30,6 +29,29 @@ app.get("/podsjetnici_za_svinje", (req, res) => {
       res.status(500).json({ error: error.message });
       console.log(error);
     });
+});
+
+app.delete("/podsjetnici/:id", (req, res) => {
+  pool
+    .query("DELETE FROM podsjetnici WHERE id = $1", [req.params.id])
+    .then(() => {
+      res.json({ message: "Podsjetnik obrisan." });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    });
+});
+
+app.put("/podsjetnici/:id", (req, res) => {
+  const { tekst_podsjetnika, datumpodsjetnika } = req.body;
+  pool
+    .query(
+      "UPDATE podsjetnici SET tekst_podsjetnika = $1, datumpodsjetnika = $2 WHERE id = $3",
+      [tekst_podsjetnika, datumpodsjetnika, req.params.id]
+    )
+    .then(() => res.json({ message: "Podsjetnik ažuriran." }))
+    .catch((error) => res.status(500).json({ error: error.message }));
 });
 
 module.exports = app;
