@@ -54,4 +54,15 @@ app.put("/podsjetnici/:id", (req, res) => {
     .catch((error) => res.status(500).json({ error: error.message }));
 });
 
+app.post("/dodajPodsjetnik/:id", (req, res) => {
+  const { tekst_podsjetnika, datumpodsjetnika } = req.body;
+  pool
+    .query(
+      "INSERT INTO podsjetnici (pig_id,datumpodsjetnika,tekst_podsjetnika) VALUES ($1, $2, $3)",
+      [req.params.id, tekst_podsjetnika, datumpodsjetnika]
+    )
+    .then(() => res.json({ message: "Podsjetnik stvoren." }))
+    .catch((error) => res.status(500).json({ error: error.message }));
+});
+
 module.exports = app;
