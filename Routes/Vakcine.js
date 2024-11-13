@@ -1,14 +1,13 @@
 const express = require("express");
 const app = express.Router();
 const pool = require("../pool");
-// Ovde su sacuvane sve vakcine koje svinje mogu primiti sa osnovnim podacima o njima
 
+// Fetch all vaccines
 app.get("/listavakcina", (req, res) => {
   pool.query("SELECT * FROM listavakcina;", (err, results) => {
     if (err) {
-      res.status(500).json({ error: "Internal Server Error" });
-      console.log(err);
-      return;
+      console.error("Error fetching vaccines:", err.message);
+      return res.status(500).json({ error: "Internal Server Error" });
     }
     res.json(results.rows);
   });

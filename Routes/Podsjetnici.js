@@ -3,66 +3,58 @@ const { body, validationResult } = require("express-validator");
 const app = express.Router();
 const pool = require("../pool");
 
+// Fetch all reminders
 app.get("/podsjetnici_za_svinje", (req, res) => {
-  pool
-    .query(
-      `
-      SELECT 
+  pool.query(
+    `SELECT 
       s.id AS svinja_id,
       s.serijski_broj_svinje,
       s.rasa_svinje,
-      CASE 
-          WHEN p.pig_id IS NOT NULL THEN true 
-          ELSE false 
-      END AS has_podsjetnik,
+      CASE WHEN p.pig_id IS NOT NULL THEN true ELSE false END AS has_podsjetnik,
       p.datumpodsjetnika,
       p.tekst_podsjetnika,
-      P.id
+      p.id
     FROM piginfo s
     LEFT JOIN podsjetnici p ON s.id = p.pig_id
     WHERE p.pig_id IS NOT NULL;`
-    )
-    .then((result) => {
-      res.json(result);
-    })
+  )
+    .then((result) => res.json(result.rows))
     .catch((error) => {
+      console.error("Error fetching reminders:", error.message);
       res.status(500).json({ error: error.message });
-      console.log(error);
     });
 });
 
+// Delete a reminder
 app.delete("/podsjetnici/:id", (req, res) => {
-  pool
-    .query("DELETE FROM podsjetnici WHERE id = $1", [req.params.id])
-    .then(() => {
-      res.json({ message: "Podsjetnik obrisan." });
-    })
+  pool.query("DELETE FROM podsjetnici WHERE id = $1", [req.params.id])
+    .then(() => res.json({ message: "Reminder deleted." }))
     .catch((error) => {
-      console.log(error);
+      console.error("Error deleting reminder:", error.message);
       res.status(500).json({ error: error.message });
     });
 });
 
-app.put("/podsjetnici/:id", (req, res) => {
-  const { tekst_podsjetnika, datumpodsjetnika } = req.body;
-  pool
-    .query(
-      "UPDATE podsjetnici SET tekst_podsjetnika = $1, datumpodsjetnika = $2 WHERE id = $3",
-      [tekst_podsjetnika, datumpodsjetnika, req.params.id]
-    )
-    .then(() => res.json({ message: "Podsjetnik ažuriran." }))
-    .catch((error) => res.status(500).json({ error: error.message }));
-});
+// Update a reminder
+app.put("/podsjetnici/:id", [
+  body("tekst_podsjetnika").notEmpty().withMessage("Reminder text cannot be empty"),
+  body("datumpodsjetnika").isISO8601().withMessage("Invalid date format"),
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-app.post("/dodajPodsjetnik/:id", (req, res) => {
   const { tekst_podsjetnika, datumpodsjetnika } = req.body;
-  pool
-    .query(
-      "INSERT INTO podsjetnici (pig_id,datumpodsjetnika,tekst_podsjetnika) VALUES ($1, $2, $3)",
-      [req.params.id, tekst_podsjetnika, datumpodsjetnika]
-    )
-    .then(() => res.json({ message: "Podsjetnik stvoren." }))
-    .catch((error) => res.status(500).json({ error: error.message }));
+  pool.query(
+    "UPDATE podsjetnici SET tekst_podsjetnika = $1, datumpodsjetnika = $2 WHERE id = $3",
+    [tekst_podsjetnika, datumpodsjetnika, req.params.id]
+  )
+    .then(() => res.json({ message: "Reminder updated." }))
+    .catch((error) => {
+      console.error("Error updating reminder:", error.message);
+      res.status(500).json({ error: error.message });
+    });
 });
 
 module.exports = app;
